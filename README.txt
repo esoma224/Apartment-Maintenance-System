@@ -1,4 +1,6 @@
-Mahmood's menu and user interface part
+CS401 Group 1
+Mahmood Akhtar Abdul Qayyum - QF2085
+Menu and User Interface Developer
 
 Build:
 javac MaintenanceTicketingApp.java
