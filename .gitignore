@@ -1,0 +1,16 @@
+# Local SQLite database and temporary files
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+
+# Java compiled files
+*.class
+
+# VS Code workspace settings
+.vscode/
+
+# Common Java build output
+bin/
+out/
+target/
