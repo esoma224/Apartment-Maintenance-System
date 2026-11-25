@@ -57,18 +57,19 @@ Main Menu
   3. Exit
 
 Resident menu
-  - Submit a maintenance request: enter apartment number, name, priority
+  - Submit a maintenance request: enter apartment number, name, category
+    (Plumbing, Electrical, Appliance, Heating/AC, or Other), priority
     (Low, Medium, or High), and a short description. The program shows a
     request number - keep it to check the status later.
   - Check request status: enter your request number.
 
 Maintenance staff menu
   - View all requests: lists every request with its apartment, resident,
-    priority, status, and description.
+    category, priority, status, and description.
   - Update a request status: enter a request number and pick the new status
     (New, In Progress, or Completed). New requests start as New.
 
-Enter menu choices, priority, and status as numbers from the list shown.
+Enter menu choices, category, priority, and status as numbers from the list shown.
 Required fields cannot be left blank; the program asks again if input is
 missing or invalid, without losing what you already typed.
 

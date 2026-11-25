@@ -31,7 +31,7 @@ public class TicketDAO {
      *
      * Example:
      * Ticket ticket = new Ticket(
-     *     0, "name", "204B", "High",
+     *     0, "name", "204B", "Plumbing", "High",
      *     "Kitchen sink is leaking.", Ticket.DEFAULT_STATUS
      * );
      * int requestNumber = ticketDAO.addTicket(ticket);
@@ -41,8 +41,8 @@ public class TicketDAO {
 
     String sql = """
             INSERT INTO tickets
-            (resident_name, apartment_number, priority, description, status)
-            VALUES (?, ?, ?, ?, ?)
+            (resident_name, apartment_number, category, priority, description, status)
+            VALUES (?, ?, ?, ?, ?, ?)
             """;
 
     try (Connection conn = DatabaseConnection.getConnection();
@@ -50,9 +50,10 @@ public class TicketDAO {
 
         pstmt.setString(1, ticket.getResidentName());
         pstmt.setString(2, ticket.getApartmentNumber());
-        pstmt.setString(3, ticket.getPriority());
-        pstmt.setString(4, ticket.getDescription());
-        pstmt.setString(5, ticket.getStatus());
+        pstmt.setString(3, ticket.getCategory());
+        pstmt.setString(4, ticket.getPriority());
+        pstmt.setString(5, ticket.getDescription());
+        pstmt.setString(6, ticket.getStatus());
 
         pstmt.executeUpdate();
 
@@ -178,6 +179,7 @@ public class TicketDAO {
             rs.getInt("id"),
             rs.getString("resident_name"),
             rs.getString("apartment_number"),
+            rs.getString("category"),
             rs.getString("priority"),
             rs.getString("description"),
             rs.getString("status")
