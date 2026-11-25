@@ -70,7 +70,7 @@ public class TicketDAO {
         throw new SQLException("No request number was returned.");
 
     } catch (SQLException e) {
-        throw new RuntimeException("Unable to save ticket.", e);
+        throw new DatabaseException("Unable to save ticket.", e);
     }
 }
 
@@ -97,8 +97,7 @@ public class TicketDAO {
             }
 
         } catch (SQLException e) {
-            System.out.println("Failed to retrieve tickets.");
-            throw new RuntimeException("Unable to load tickets.", e);
+            throw new DatabaseException("Unable to load tickets.", e);
         }
 
         return tickets;
@@ -129,8 +128,7 @@ public class TicketDAO {
             }
 
         } catch (SQLException e) {
-            System.out.println("Failed to retrieve ticket.");
-            throw new RuntimeException("Unable to load ticket.", e);
+            throw new DatabaseException("Unable to load ticket.", e);
         }
 
         return null;
@@ -168,8 +166,7 @@ public class TicketDAO {
             return rowsUpdated > 0;
 
         } catch (SQLException e) {
-            System.out.println("Failed to update ticket.");
-            throw new RuntimeException("Unable to update ticket.", e);
+            throw new DatabaseException("Unable to update ticket.", e);
         }
     }
 
@@ -202,7 +199,7 @@ public class TicketDAO {
             return pstmt.executeUpdate() > 0;
 
         } catch (SQLException e) {
-            throw new RuntimeException("Unable to save note.", e);
+            throw new DatabaseException("Unable to save note.", e);
         }
     }
 
@@ -237,7 +234,7 @@ public class TicketDAO {
             }
 
         } catch (SQLException e) {
-            throw new RuntimeException("Unable to load notes.", e);
+            throw new DatabaseException("Unable to load notes.", e);
         }
 
         return notes;

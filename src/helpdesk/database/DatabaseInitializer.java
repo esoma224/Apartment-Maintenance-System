@@ -61,7 +61,7 @@ public class DatabaseInitializer {
             cleanUpOldValues(stmt);
 
         } catch (SQLException e) {
-            throw new RuntimeException("Unable to initialize database.", e);
+            throw new DatabaseException("Unable to initialize database.", e);
         }
     }
 
