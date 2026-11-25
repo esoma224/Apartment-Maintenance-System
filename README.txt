@@ -61,11 +61,14 @@ Resident menu
     (Plumbing, Electrical, Appliance, Heating/AC, or Other), priority
     (Low, Medium, or High), and a short description. The program shows a
     request number - keep it to check the status later.
-  - Check request status: enter your request number.
+  - Check request status: enter your request number to see the request's
+    details and current status.
 
 Maintenance staff menu
   - View all requests: lists every request with its apartment, resident,
     category, priority, status, and description.
+  - View request details: enter a request number to see all of its
+    information, including staff notes.
   - Update a request status: enter a request number and pick the new status
     (New, In Progress, or Completed). New requests start as New.
   - Add a note to a request: enter a request number and a note, for example
