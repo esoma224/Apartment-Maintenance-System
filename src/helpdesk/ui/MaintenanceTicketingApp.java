@@ -2,6 +2,7 @@ package helpdesk.ui;
 
 import helpdesk.database.DatabaseInitializer;
 import helpdesk.database.TicketDAO;
+import helpdesk.model.Note;
 import helpdesk.model.Ticket;
 import java.util.List;
 import java.util.Scanner;
@@ -65,21 +66,24 @@ public class MaintenanceTicketingApp {
         while (!back) {
             System.out.println("\nMaintenance Staff Menu");
             System.out.println("1. View all requests");
-            System.out.println("2. Update a request status");
-            System.out.println("3. Add a note to a request");
-            System.out.println("4. Return to main menu");
+            System.out.println("2. View request details");
+            System.out.println("3. Update a request status");
+            System.out.println("4. Add a note to a request");
+            System.out.println("5. Return to main menu");
             int choice = readNumber("Choose an option: ");
 
             if (choice == 1) {
                 viewAllRequests();
             } else if (choice == 2) {
-                updateStatus();
+                viewRequestDetails();
             } else if (choice == 3) {
-                addNote();
+                updateStatus();
             } else if (choice == 4) {
+                addNote();
+            } else if (choice == 5) {
                 back = true;
             } else {
-                System.out.println("Please choose 1, 2, 3, or 4.");
+                System.out.println("Please choose a number from 1 to 5.");
             }
         }
     }
@@ -109,9 +113,41 @@ public class MaintenanceTicketingApp {
         if (ticket == null) {
             System.out.println("No request was found with that number.");
         } else {
-            System.out.println("Request number: " + ticket.getId());
-            System.out.println("Status: " + ticket.getStatus());
+            printTicketDetails(ticket);
         }
+    }
+
+    //staff version of the details screen, also shows the staff notes
+    private static void viewRequestDetails() {
+        int number = readNumber("Enter the request number: ");
+        Ticket ticket = ticketDAO.getTicketById(number);
+
+        if (ticket == null) {
+            System.out.println("No request was found with that number.");
+            return;
+        }
+
+        printTicketDetails(ticket);
+
+        List<Note> notes = ticketDAO.getNotesForTicket(number);
+        if (notes.isEmpty()) {
+            System.out.println("Notes: none");
+        } else {
+            System.out.println("Notes:");
+            for (Note note : notes) {
+                System.out.println("  [" + note.getCreatedAt() + "] " + note.getText());
+            }
+        }
+    }
+
+    private static void printTicketDetails(Ticket ticket) {
+        System.out.println("\nRequest number: " + ticket.getId());
+        System.out.println("Apartment:      " + ticket.getApartmentNumber());
+        System.out.println("Resident:       " + ticket.getResidentName());
+        System.out.println("Category:       " + ticket.getCategory());
+        System.out.println("Priority:       " + ticket.getPriority());
+        System.out.println("Status:         " + ticket.getStatus());
+        System.out.println("Description:    " + ticket.getDescription());
     }
 
     private static void viewAllRequests() {
