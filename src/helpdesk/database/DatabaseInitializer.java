@@ -1,5 +1,6 @@
 package helpdesk.database;
 
+import helpdesk.model.Ticket;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -21,7 +22,7 @@ public class DatabaseInitializer {
      * creates the tickets table if it does not already exist
      *
      * sqlite automatically generates ticket IDs and assigns
-     * new tickets the default status "Open"
+     * new tickets the default status "New"
      */
 
         String sql = """
@@ -31,7 +32,7 @@ public class DatabaseInitializer {
                     apartment_number TEXT NOT NULL,
                     priority TEXT NOT NULL,
                     description TEXT NOT NULL,
-                    status TEXT NOT NULL DEFAULT 'Open'
+                    status TEXT NOT NULL DEFAULT 'New'
                 )
                 """;
 
@@ -39,10 +40,31 @@ public class DatabaseInitializer {
              Statement stmt = conn.createStatement()) {
 
             stmt.execute(sql);
-            System.out.println("Database initialized successfully!");
+            cleanUpOldValues(stmt);
 
         } catch (SQLException e) {
             throw new RuntimeException("Unable to initialize database.", e);
+        }
+    }
+
+    /**
+     * fixes requests saved by older versions of the program
+     *
+     * older versions saved priority and status exactly as typed
+     * ("high", "HIGH", "in progress"), and used "Open" instead of "New".
+     * this rewrites them to the official spelling in Ticket.PRIORITIES
+     * and Ticket.STATUSES. it is safe to run every time the program starts.
+     */
+    private static void cleanUpOldValues(Statement stmt) throws SQLException {
+        stmt.executeUpdate("UPDATE tickets SET status = 'New' WHERE lower(trim(status)) = 'open'");
+
+        for (String status : Ticket.STATUSES) {
+            stmt.executeUpdate("UPDATE tickets SET status = '" + status
+                    + "' WHERE lower(trim(status)) = lower('" + status + "')");
+        }
+        for (String priority : Ticket.PRIORITIES) {
+            stmt.executeUpdate("UPDATE tickets SET priority = '" + priority
+                    + "' WHERE lower(trim(priority)) = lower('" + priority + "')");
         }
     }
 }

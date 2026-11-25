@@ -65,11 +65,12 @@ Resident menu
 Maintenance staff menu
   - View all requests: lists every request with its apartment, resident,
     priority, status, and description.
-  - Update a request status: enter a request number and the new status
-    (Open, In Progress, or Completed).
+  - Update a request status: enter a request number and pick the new status
+    (New, In Progress, or Completed). New requests start as New.
 
-Enter menu choices as numbers. Required fields cannot be left blank; the
-program asks again if input is missing or invalid.
+Enter menu choices, priority, and status as numbers from the list shown.
+Required fields cannot be left blank; the program asks again if input is
+missing or invalid, without losing what you already typed.
 
 
 PROJECT STRUCTURE
