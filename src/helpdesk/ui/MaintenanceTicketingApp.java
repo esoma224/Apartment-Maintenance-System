@@ -1,5 +1,6 @@
 package helpdesk.ui;
 
+import helpdesk.database.DatabaseException;
 import helpdesk.database.DatabaseInitializer;
 import helpdesk.database.TicketDAO;
 import helpdesk.model.Note;
@@ -12,7 +13,14 @@ public class MaintenanceTicketingApp {
     private static final TicketDAO ticketDAO = new TicketDAO();
 
     public static void main(String[] args) {
-        DatabaseInitializer.initializeDatabase();
+        try {
+            DatabaseInitializer.initializeDatabase();
+        } catch (DatabaseException error) {
+            System.out.println("The program could not open its database (helpdesk.db).");
+            System.out.println("Details: " + describe(error));
+            System.out.println("Check that helpdesk.db and its folder are not read-only, then try again.");
+            return;
+        }
 
         boolean running = true;
         System.out.println("Apartment Maintenance Ticketing System");
@@ -48,14 +56,18 @@ public class MaintenanceTicketingApp {
             System.out.println("3. Return to main menu");
             int choice = readNumber("Choose an option: ");
 
-            if (choice == 1) {
-                submitRequest();
-            } else if (choice == 2) {
-                checkRequestStatus();
-            } else if (choice == 3) {
-                back = true;
-            } else {
-                System.out.println("Please choose 1, 2, or 3.");
+            try {
+                if (choice == 1) {
+                    submitRequest();
+                } else if (choice == 2) {
+                    checkRequestStatus();
+                } else if (choice == 3) {
+                    back = true;
+                } else {
+                    System.out.println("Please choose 1, 2, or 3.");
+                }
+            } catch (DatabaseException error) {
+                showDatabaseError(error);
             }
         }
     }
@@ -72,18 +84,22 @@ public class MaintenanceTicketingApp {
             System.out.println("5. Return to main menu");
             int choice = readNumber("Choose an option: ");
 
-            if (choice == 1) {
-                viewAllRequests();
-            } else if (choice == 2) {
-                viewRequestDetails();
-            } else if (choice == 3) {
-                updateStatus();
-            } else if (choice == 4) {
-                addNote();
-            } else if (choice == 5) {
-                back = true;
-            } else {
-                System.out.println("Please choose a number from 1 to 5.");
+            try {
+                if (choice == 1) {
+                    viewAllRequests();
+                } else if (choice == 2) {
+                    viewRequestDetails();
+                } else if (choice == 3) {
+                    updateStatus();
+                } else if (choice == 4) {
+                    addNote();
+                } else if (choice == 5) {
+                    back = true;
+                } else {
+                    System.out.println("Please choose a number from 1 to 5.");
+                }
+            } catch (DatabaseException error) {
+                showDatabaseError(error);
             }
         }
     }
@@ -228,10 +244,40 @@ public class MaintenanceTicketingApp {
         }
     }
 
+    //shown when a database operation fails, the user goes back to the menu
+    private static void showDatabaseError(DatabaseException error) {
+        System.out.println("Sorry, that could not be completed because of a database problem.");
+        System.out.println("Details: " + describe(error));
+        System.out.println("Please try again.");
+    }
+
+    //the database's own error message, for example "database is locked"
+    private static String describe(DatabaseException error) {
+        Throwable cause = error.getCause();
+        if (cause != null && cause.getMessage() != null) {
+            return error.getMessage() + " " + cause.getMessage();
+        }
+        return error.getMessage();
+    }
+
+    /**
+     * reads one line of input
+     *
+     * if the input ends (Ctrl+D on macOS/Linux, Ctrl+Z then Enter on Windows)
+     * the program says goodbye and closes instead of crashing
+     */
+    private static String readLine() {
+        if (!input.hasNextLine()) {
+            System.out.println("\nInput ended. Goodbye.");
+            System.exit(0);
+        }
+        return input.nextLine().trim();
+    }
+
     private static String readRequiredText(String message) {
         while (true) {
             System.out.print(message);
-            String value = input.nextLine().trim();
+            String value = readLine();
             if (!value.isEmpty()) {
                 return value;
             }
@@ -242,7 +288,7 @@ public class MaintenanceTicketingApp {
     private static int readNumber(String message) {
         while (true) {
             System.out.print(message);
-            String value = input.nextLine().trim();
+            String value = readLine();
             try {
                 return Integer.parseInt(value);
             } catch (NumberFormatException error) {

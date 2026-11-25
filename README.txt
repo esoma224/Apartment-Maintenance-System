@@ -77,7 +77,9 @@ Maintenance staff menu
 
 Enter menu choices, category, priority, and status as numbers from the list shown.
 Required fields cannot be left blank; the program asks again if input is
-missing or invalid, without losing what you already typed.
+missing or invalid, without losing what you already typed. If a database
+problem happens, the program shows a message and returns to the menu
+instead of closing.
 
 
 PROJECT STRUCTURE
@@ -89,5 +91,6 @@ src/helpdesk/
   database/TicketDAO.java              Saves, finds, and updates tickets (all SQL lives here)
   database/DatabaseConnection.java     Opens connections to helpdesk.db
   database/DatabaseInitializer.java    Creates/updates the tables on startup
+  database/DatabaseException.java      Error thrown when a database operation fails
 lib/
   sqlite-jdbc-3.53.4.0.jar             SQLite database driver
