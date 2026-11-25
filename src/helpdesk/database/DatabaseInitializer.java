@@ -38,10 +38,25 @@ public class DatabaseInitializer {
                 )
                 """;
 
+        /*
+         * staff notes are kept in their own table so one request can have
+         * many notes. ticket_id links each note to its request, and sqlite
+         * fills in created_at with the current local date and time.
+         */
+        String notesSql = """
+                CREATE TABLE IF NOT EXISTS ticket_notes (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    ticket_id INTEGER NOT NULL REFERENCES tickets(id),
+                    note TEXT NOT NULL,
+                    created_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime'))
+                )
+                """;
+
         try (Connection conn = DatabaseConnection.getConnection();
              Statement stmt = conn.createStatement()) {
 
             stmt.execute(sql);
+            stmt.execute(notesSql);
             addMissingColumns(conn, stmt);
             cleanUpOldValues(stmt);
 

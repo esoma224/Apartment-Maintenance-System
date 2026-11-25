@@ -68,6 +68,9 @@ Maintenance staff menu
     category, priority, status, and description.
   - Update a request status: enter a request number and pick the new status
     (New, In Progress, or Completed). New requests start as New.
+  - Add a note to a request: enter a request number and a note, for example
+    "Ordered a new faucet part." A request can have many notes; each one is
+    saved with the date and time it was added.
 
 Enter menu choices, category, priority, and status as numbers from the list shown.
 Required fields cannot be left blank; the program asks again if input is
@@ -79,8 +82,9 @@ PROJECT STRUCTURE
 src/helpdesk/
   ui/MaintenanceTicketingApp.java      Console menus and user input (program entry point)
   model/Ticket.java                    A single maintenance request
+  model/Note.java                      A staff note on a request
   database/TicketDAO.java              Saves, finds, and updates tickets (all SQL lives here)
   database/DatabaseConnection.java     Opens connections to helpdesk.db
-  database/DatabaseInitializer.java    Creates the tickets table on startup
+  database/DatabaseInitializer.java    Creates/updates the tables on startup
 lib/
   sqlite-jdbc-3.53.4.0.jar             SQLite database driver

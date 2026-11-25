@@ -66,7 +66,8 @@ public class MaintenanceTicketingApp {
             System.out.println("\nMaintenance Staff Menu");
             System.out.println("1. View all requests");
             System.out.println("2. Update a request status");
-            System.out.println("3. Return to main menu");
+            System.out.println("3. Add a note to a request");
+            System.out.println("4. Return to main menu");
             int choice = readNumber("Choose an option: ");
 
             if (choice == 1) {
@@ -74,9 +75,11 @@ public class MaintenanceTicketingApp {
             } else if (choice == 2) {
                 updateStatus();
             } else if (choice == 3) {
+                addNote();
+            } else if (choice == 4) {
                 back = true;
             } else {
-                System.out.println("Please choose 1, 2, or 3.");
+                System.out.println("Please choose 1, 2, 3, or 4.");
             }
         }
     }
@@ -147,6 +150,26 @@ public class MaintenanceTicketingApp {
             System.out.println("The request status was updated.");
         } else {
             System.out.println("The request status could not be updated.");
+        }
+    }
+
+    private static void addNote() {
+        int number = readNumber("Enter the request number: ");
+        Ticket ticket = ticketDAO.getTicketById(number);
+
+        if (ticket == null) {
+            System.out.println("No request was found with that number.");
+            return;
+        }
+
+        System.out.println("Request " + ticket.getId() + " (" + ticket.getCategory()
+                + "): " + ticket.getDescription());
+        String text = readRequiredText("Note: ");
+
+        if (ticketDAO.addNote(number, text)) {
+            System.out.println("The note was saved.");
+        } else {
+            System.out.println("The note could not be saved.");
         }
     }
 
