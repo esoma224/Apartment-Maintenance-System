@@ -82,6 +82,24 @@ problem happens, the program shows a message and returns to the menu
 instead of closing.
 
 
+PHASE 3 CHANGES
+---------------
+Bugs fixed after testing:
+  - The request number now comes from the database insert itself, instead
+    of looking up the highest ID (which could show the wrong number).
+  - Priority and status are chosen from numbered lists, so they are always
+    saved with the same spelling ("High", not "high" or "HIGH").
+  - An invalid choice now asks again instead of cancelling the request.
+
+Features added from the proposal:
+  - Maintenance category (Plumbing, Electrical, Appliance, Heating/AC, Other).
+  - Staff notes on requests, saved with the date and time.
+  - Request details view for staff (including notes) and residents.
+  - Statuses renamed to New / In Progress / Completed.
+  - Clear messages for database errors instead of crashing.
+  - Databases from earlier versions are updated automatically on startup.
+
+
 PROJECT STRUCTURE
 -----------------
 src/helpdesk/
