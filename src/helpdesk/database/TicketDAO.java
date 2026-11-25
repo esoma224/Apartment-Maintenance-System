@@ -1,5 +1,6 @@
 package helpdesk.database;
 
+import helpdesk.model.Note;
 import helpdesk.model.Ticket;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -19,6 +20,8 @@ import java.util.List;
  *  getAllTickets(): retrieve all requests
  *  getTicketById(): retrieve a specific request
  *  updateTicketStatus(): change and save a request's status
+ *  addNote(): save a staff note on a request
+ *  getNotesForTicket(): retrieve a request's notes, oldest first
  */
 
 public class TicketDAO {
@@ -168,6 +171,76 @@ public class TicketDAO {
             System.out.println("Failed to update ticket.");
             throw new RuntimeException("Unable to update ticket.", e);
         }
+    }
+
+    /**
+     * saves a staff note on a request
+     *
+     * the date and time are filled in automatically by sqlite
+     *
+     * Example:
+     * ticketDAO.addNote(1, "Ordered a new faucet part.");
+     *
+     * returns true if the note was saved,
+     * false if no request has that number
+     */
+
+    public boolean addNote(int ticketId, String text) {
+
+        //only insert when the request exists, so notes never point to a missing request
+        String sql = """
+                INSERT INTO ticket_notes (ticket_id, note)
+                SELECT id, ? FROM tickets WHERE id = ?
+                """;
+
+        try (Connection conn = DatabaseConnection.getConnection();
+            PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setString(1, text);
+            pstmt.setInt(2, ticketId);
+
+            return pstmt.executeUpdate() > 0;
+
+        } catch (SQLException e) {
+            throw new RuntimeException("Unable to save note.", e);
+        }
+    }
+
+    /**
+     * retrieves all notes for one request, oldest first
+     *
+     * returns an empty list if the request has no notes
+     */
+
+    public List<Note> getNotesForTicket(int ticketId) {
+
+        List<Note> notes = new ArrayList<>();
+
+        String sql = "SELECT * FROM ticket_notes WHERE ticket_id = ? ORDER BY id";
+
+        try (Connection conn = DatabaseConnection.getConnection();
+            PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setInt(1, ticketId);
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+
+                while (rs.next()) {
+
+                    notes.add(new Note(
+                        rs.getInt("id"),
+                        rs.getInt("ticket_id"),
+                        rs.getString("note"),
+                        rs.getString("created_at")
+                    ));
+                }
+            }
+
+        } catch (SQLException e) {
+            throw new RuntimeException("Unable to load notes.", e);
+        }
+
+        return notes;
     }
 
     /**
