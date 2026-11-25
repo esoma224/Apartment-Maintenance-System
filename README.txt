@@ -57,19 +57,29 @@ Main Menu
   3. Exit
 
 Resident menu
-  - Submit a maintenance request: enter apartment number, name, priority
+  - Submit a maintenance request: enter apartment number, name, category
+    (Plumbing, Electrical, Appliance, Heating/AC, or Other), priority
     (Low, Medium, or High), and a short description. The program shows a
     request number - keep it to check the status later.
-  - Check request status: enter your request number.
+  - Check request status: enter your request number to see the request's
+    details and current status.
 
 Maintenance staff menu
   - View all requests: lists every request with its apartment, resident,
-    priority, status, and description.
-  - Update a request status: enter a request number and the new status
-    (Open, In Progress, or Completed).
+    category, priority, status, and description.
+  - View request details: enter a request number to see all of its
+    information, including staff notes.
+  - Update a request status: enter a request number and pick the new status
+    (New, In Progress, or Completed). New requests start as New.
+  - Add a note to a request: enter a request number and a note, for example
+    "Ordered a new faucet part." A request can have many notes; each one is
+    saved with the date and time it was added.
 
-Enter menu choices as numbers. Required fields cannot be left blank; the
-program asks again if input is missing or invalid.
+Enter menu choices, category, priority, and status as numbers from the list shown.
+Required fields cannot be left blank; the program asks again if input is
+missing or invalid, without losing what you already typed. If a database
+problem happens, the program shows a message and returns to the menu
+instead of closing.
 
 
 PROJECT STRUCTURE
@@ -77,8 +87,10 @@ PROJECT STRUCTURE
 src/helpdesk/
   ui/MaintenanceTicketingApp.java      Console menus and user input (program entry point)
   model/Ticket.java                    A single maintenance request
+  model/Note.java                      A staff note on a request
   database/TicketDAO.java              Saves, finds, and updates tickets (all SQL lives here)
   database/DatabaseConnection.java     Opens connections to helpdesk.db
-  database/DatabaseInitializer.java    Creates the tickets table on startup
+  database/DatabaseInitializer.java    Creates/updates the tables on startup
+  database/DatabaseException.java      Error thrown when a database operation fails
 lib/
   sqlite-jdbc-3.53.4.0.jar             SQLite database driver

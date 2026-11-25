@@ -1,5 +1,6 @@
 package helpdesk.database;
 
+import helpdesk.model.Note;
 import helpdesk.model.Ticket;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -15,10 +16,12 @@ import java.util.List;
  * dont write your own sql, just use these methods
  *
  * these are the functions you can use:
- *  addTicket(): save a new request
+ *  addTicket(): save a new request and get its request number
  *  getAllTickets(): retrieve all requests
  *  getTicketById(): retrieve a specific request
  *  updateTicketStatus(): change and save a request's status
+ *  addNote(): save a staff note on a request
+ *  getNotesForTicket(): retrieve a request's notes, oldest first
  */
 
 public class TicketDAO {
@@ -27,38 +30,47 @@ public class TicketDAO {
      * saves a request to SQLite.
      *
      * the ticket ID is generated automatically by sqlite
-     * new tickets will be set to "Open" status
+     * and returned, this is the request number to show the resident
      *
      * Example:
      * Ticket ticket = new Ticket(
-     *     0, "name", "204B", "High",
-     *     "Kitchen sink is leaking.", "Open"
+     *     0, "name", "204B", "Plumbing", "High",
+     *     "Kitchen sink is leaking.", Ticket.DEFAULT_STATUS
      * );
-     * ticketDAO.addTicket(ticket);
+     * int requestNumber = ticketDAO.addTicket(ticket);
      */
 
-    public void addTicket(Ticket ticket) {
+    public int addTicket(Ticket ticket) {
 
     String sql = """
             INSERT INTO tickets
-            (resident_name, apartment_number, priority, description)
-            VALUES (?, ?, ?, ?)
+            (resident_name, apartment_number, category, priority, description, status)
+            VALUES (?, ?, ?, ?, ?, ?)
             """;
 
     try (Connection conn = DatabaseConnection.getConnection();
-         PreparedStatement pstmt = conn.prepareStatement(sql)) {
+         PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
         pstmt.setString(1, ticket.getResidentName());
         pstmt.setString(2, ticket.getApartmentNumber());
-        pstmt.setString(3, ticket.getPriority());
-        pstmt.setString(4, ticket.getDescription());
+        pstmt.setString(3, ticket.getCategory());
+        pstmt.setString(4, ticket.getPriority());
+        pstmt.setString(5, ticket.getDescription());
+        pstmt.setString(6, ticket.getStatus());
 
-        int rowsInserted = pstmt.executeUpdate();
+        pstmt.executeUpdate();
 
-        System.out.println("Tickets inserted: " + rowsInserted);
+        //ask sqlite for the id of the row this insert just created
+        //(safer than looking for the highest id, which could belong to someone else)
+        try (ResultSet keys = pstmt.getGeneratedKeys()) {
+            if (keys.next()) {
+                return keys.getInt(1);
+            }
+        }
+        throw new SQLException("No request number was returned.");
 
     } catch (SQLException e) {
-        throw new RuntimeException("Unable to save ticket.", e);
+        throw new DatabaseException("Unable to save ticket.", e);
     }
 }
 
@@ -85,8 +97,7 @@ public class TicketDAO {
             }
 
         } catch (SQLException e) {
-            System.out.println("Failed to retrieve tickets.");
-            throw new RuntimeException("Unable to load tickets.", e);
+            throw new DatabaseException("Unable to load tickets.", e);
         }
 
         return tickets;
@@ -117,8 +128,7 @@ public class TicketDAO {
             }
 
         } catch (SQLException e) {
-            System.out.println("Failed to retrieve ticket.");
-            throw new RuntimeException("Unable to load ticket.", e);
+            throw new DatabaseException("Unable to load ticket.", e);
         }
 
         return null;
@@ -128,10 +138,10 @@ public class TicketDAO {
      * this updates the status of a ticket
      *
      * used so you can set the status of a ticket to
-     * "Open", "In Progress", "Completed", etc
+     * one of Ticket.STATUSES: "New", "In Progress", "Completed"
      *
      * Example:
-     * ticketDAO.updateTicketStatus(1, "In Progress");\
+     * ticketDAO.updateTicketStatus(1, "In Progress");
      * 
      * returns true if the ticket was found and updated
      * false if the ticket doesnt exist
@@ -156,9 +166,78 @@ public class TicketDAO {
             return rowsUpdated > 0;
 
         } catch (SQLException e) {
-            System.out.println("Failed to update ticket.");
-            throw new RuntimeException("Unable to update ticket.", e);
+            throw new DatabaseException("Unable to update ticket.", e);
         }
+    }
+
+    /**
+     * saves a staff note on a request
+     *
+     * the date and time are filled in automatically by sqlite
+     *
+     * Example:
+     * ticketDAO.addNote(1, "Ordered a new faucet part.");
+     *
+     * returns true if the note was saved,
+     * false if no request has that number
+     */
+
+    public boolean addNote(int ticketId, String text) {
+
+        //only insert when the request exists, so notes never point to a missing request
+        String sql = """
+                INSERT INTO ticket_notes (ticket_id, note)
+                SELECT id, ? FROM tickets WHERE id = ?
+                """;
+
+        try (Connection conn = DatabaseConnection.getConnection();
+            PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setString(1, text);
+            pstmt.setInt(2, ticketId);
+
+            return pstmt.executeUpdate() > 0;
+
+        } catch (SQLException e) {
+            throw new DatabaseException("Unable to save note.", e);
+        }
+    }
+
+    /**
+     * retrieves all notes for one request, oldest first
+     *
+     * returns an empty list if the request has no notes
+     */
+
+    public List<Note> getNotesForTicket(int ticketId) {
+
+        List<Note> notes = new ArrayList<>();
+
+        String sql = "SELECT * FROM ticket_notes WHERE ticket_id = ? ORDER BY id";
+
+        try (Connection conn = DatabaseConnection.getConnection();
+            PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setInt(1, ticketId);
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+
+                while (rs.next()) {
+
+                    notes.add(new Note(
+                        rs.getInt("id"),
+                        rs.getInt("ticket_id"),
+                        rs.getString("note"),
+                        rs.getString("created_at")
+                    ));
+                }
+            }
+
+        } catch (SQLException e) {
+            throw new DatabaseException("Unable to load notes.", e);
+        }
+
+        return notes;
     }
 
     /**
@@ -170,6 +249,7 @@ public class TicketDAO {
             rs.getInt("id"),
             rs.getString("resident_name"),
             rs.getString("apartment_number"),
+            rs.getString("category"),
             rs.getString("priority"),
             rs.getString("description"),
             rs.getString("status")
