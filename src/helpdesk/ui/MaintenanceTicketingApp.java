@@ -86,21 +86,12 @@ public class MaintenanceTicketingApp {
         String apartment = readRequiredText("Apartment or unit number: ");
         String resident = readRequiredText("Resident name: ");
 
-        System.out.println("Priority options: Low, Medium, High");
-        String priority = readRequiredText("Priority: ");
+        String priority = readChoice("Priority", Ticket.PRIORITIES);
         String description = readRequiredText("Short description of the problem: ");
 
-        if (!priority.equalsIgnoreCase("Low")
-                && !priority.equalsIgnoreCase("Medium")
-                && !priority.equalsIgnoreCase("High")) {
-            System.out.println("Please enter Low, Medium, or High.");
-            return;
-        }
+        Ticket ticket = new Ticket(0, resident, apartment, priority, description, Ticket.DEFAULT_STATUS);
+        int requestNumber = ticketDAO.addTicket(ticket);
 
-        Ticket ticket = new Ticket(0, resident, apartment, priority, description, "Open");
-        ticketDAO.addTicket(ticket);
-
-        int requestNumber = getNewestRequestNumber();
         System.out.println("Request submitted successfully.");
         System.out.println("Your request number is: " + requestNumber);
         System.out.println("Keep this number to check the request status.");
@@ -146,14 +137,8 @@ public class MaintenanceTicketingApp {
             return;
         }
 
-        System.out.println("Status options: Open, In Progress, Completed");
-        String status = readRequiredText("Enter the new status: ");
-        if (!status.equalsIgnoreCase("Open")
-                && !status.equalsIgnoreCase("In Progress")
-                && !status.equalsIgnoreCase("Completed")) {
-            System.out.println("Please enter Open, In Progress, or Completed.");
-            return;
-        }
+        System.out.println("Current status: " + ticket.getStatus());
+        String status = readChoice("New status", Ticket.STATUSES);
 
         if (ticketDAO.updateTicketStatus(number, status)) {
             System.out.println("The request status was updated.");
@@ -162,15 +147,23 @@ public class MaintenanceTicketingApp {
         }
     }
 
-    private static int getNewestRequestNumber() {
-        List<Ticket> tickets = ticketDAO.getAllTickets();
-        int newestNumber = 0;
-        for (Ticket ticket : tickets) {
-            if (ticket.getId() > newestNumber) {
-                newestNumber = ticket.getId();
-            }
+    /**
+     * shows a numbered list of options and keeps asking until the user
+     * picks a valid number, then returns that option's exact spelling
+     * (so "High" is always saved as "High", never "high" or "HIGH")
+     */
+    private static String readChoice(String title, List<String> options) {
+        System.out.println(title + " options:");
+        for (int i = 0; i < options.size(); i++) {
+            System.out.println((i + 1) + ". " + options.get(i));
         }
-        return newestNumber;
+        while (true) {
+            int choice = readNumber("Choose 1-" + options.size() + ": ");
+            if (choice >= 1 && choice <= options.size()) {
+                return options.get(choice - 1);
+            }
+            System.out.println("Please choose a number from 1 to " + options.size() + ".");
+        }
     }
 
     private static String readRequiredText(String message) {
