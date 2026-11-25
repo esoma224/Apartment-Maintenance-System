@@ -86,10 +86,12 @@ public class MaintenanceTicketingApp {
         String apartment = readRequiredText("Apartment or unit number: ");
         String resident = readRequiredText("Resident name: ");
 
+        String category = readChoice("Category", Ticket.CATEGORIES);
         String priority = readChoice("Priority", Ticket.PRIORITIES);
         String description = readRequiredText("Short description of the problem: ");
 
-        Ticket ticket = new Ticket(0, resident, apartment, priority, description, Ticket.DEFAULT_STATUS);
+        Ticket ticket = new Ticket(0, resident, apartment, category, priority,
+                description, Ticket.DEFAULT_STATUS);
         int requestNumber = ticketDAO.addTicket(ticket);
 
         System.out.println("Request submitted successfully.");
@@ -122,6 +124,7 @@ public class MaintenanceTicketingApp {
             System.out.println("Request " + ticket.getId()
                     + " | Apartment: " + ticket.getApartmentNumber()
                     + " | Resident: " + ticket.getResidentName()
+                    + " | Category: " + ticket.getCategory()
                     + " | Priority: " + ticket.getPriority()
                     + " | Status: " + ticket.getStatus());
             System.out.println("Description: " + ticket.getDescription());

@@ -2,6 +2,7 @@ package helpdesk.database;
 
 import helpdesk.model.Ticket;
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
@@ -30,6 +31,7 @@ public class DatabaseInitializer {
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     resident_name TEXT NOT NULL,
                     apartment_number TEXT NOT NULL,
+                    category TEXT NOT NULL DEFAULT 'Other',
                     priority TEXT NOT NULL,
                     description TEXT NOT NULL,
                     status TEXT NOT NULL DEFAULT 'New'
@@ -40,10 +42,30 @@ public class DatabaseInitializer {
              Statement stmt = conn.createStatement()) {
 
             stmt.execute(sql);
+            addMissingColumns(conn, stmt);
             cleanUpOldValues(stmt);
 
         } catch (SQLException e) {
             throw new RuntimeException("Unable to initialize database.", e);
+        }
+    }
+
+    /**
+     * adds columns that newer versions of the program need
+     *
+     * CREATE TABLE IF NOT EXISTS does nothing when helpdesk.db already
+     * exists, so a database made by an older version would be missing
+     * these columns. requests saved before categories existed get "Other".
+     */
+    private static void addMissingColumns(Connection conn, Statement stmt) throws SQLException {
+        if (!columnExists(conn, "tickets", "category")) {
+            stmt.execute("ALTER TABLE tickets ADD COLUMN category TEXT NOT NULL DEFAULT 'Other'");
+        }
+    }
+
+    private static boolean columnExists(Connection conn, String table, String column) throws SQLException {
+        try (ResultSet rs = conn.getMetaData().getColumns(null, null, table, column)) {
+            return rs.next();
         }
     }
 
