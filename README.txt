@@ -29,25 +29,6 @@ REQUIREMENTS
    needs to be installed. You do NOT need to install SQLite separately.
 
 
-BUILD AND RUN
--------------
-Run these commands from the project folder (the folder containing src/ and lib/).
-
-macOS / Linux:
-    javac -cp "lib/sqlite-jdbc-3.53.4.0.jar" -d out $(find src -name "*.java")
-    java -cp "out:lib/sqlite-jdbc-3.53.4.0.jar" helpdesk.ui.MaintenanceTicketingApp
-
-Windows (Command Prompt):
-    dir /s /b src\*.java > sources.txt
-    javac -cp "lib\sqlite-jdbc-3.53.4.0.jar" -d out @sources.txt
-    java -cp "out;lib\sqlite-jdbc-3.53.4.0.jar" helpdesk.ui.MaintenanceTicketingApp
-
-Note: Windows uses ";" between classpath entries, macOS/Linux use ":".
-
-On the first run the program creates a database file named helpdesk.db in the
-folder you run it from. To start over with no requests, close the program and
-delete helpdesk.db.
-
 
 HOW TO USE
 ----------
@@ -84,7 +65,7 @@ instead of closing.
 
 PHASE 3 CHANGES
 ---------------
-Bugs fixed after testing:
+New fixes after testing:
   - The request number now comes from the database insert itself, instead
     of looking up the highest ID (which could show the wrong number).
   - Priority and status are chosen from numbered lists, so they are always
